@@ -1,0 +1,127 @@
+---
+title: "Lecture 5 - Data Import"
+output: html_document
+---
+
+# Random Notes
+*R can hold integer, character, vector and factor variables
+*Data frames are actually lists.
+    tibble = a version of a dataframe that is easier to print  
+*In general, try to get the most raw form of data so that you have complete control over the cleaning process 
+which is easy to fix/double check later on
+
+# Importing Files/Directories
+
+When importing files from your computer, you call upon a file's directory/storage pathway, which can be either: 
+
+*Absolute: a file or folder’s “full address” on your computer
+    e.g. "/Users/jeffgoldsmith/Dropbox/Work/Teaching/P8105/Fall_2018/p8105.github.io/data/FAS_litters.csv"
+  
+*Relative: directions to a file or folder from your current working directory. to first find your working directory where this project is stored, type 'getwd()' and represent this with a period . before adding /... to specify exactly where your file is located within the working directory  
+    e.g. "./data/FAS_litters.csv"
+
+Note: it's better to use a relative directory bc its easier for someone else to access it without having the 
+exact same pathway as you. but if you do send the rproject file to someone, you should explain how it's saved 
+
+Shorthand notes for relative directories: 
+~ = home directory
+. = current working directory
+.. = one directory up from current working directory
+../.. two directories up from current working directory 
+
+# Importing Data Tables
+
+we're using csv comma delimited files (csv)
+```{r}
+library(tidyverse)
+getwd()
+litters_data = read_csv(file = "./sample data/FAS_litters.csv")
+litters_data = janitor::clean_names(litters_data) # to clean up var names 
+```
+
+
+# Looking at Data
+```{r}
+names(litters_data) #to see all variable names
+
+# use any of the following commands to view the dataset in the environment window on the right: 
+str
+head (litters_data, 5) # to see first five rows of data  
+View
+tail
+
+skimr::skim(litters_data) # to generate summary stats e.g. # of obs, # of vars
+```
+
+# How to read a data file
+
+```{r}
+litters_data = read_csv(file = "./sample data/FAS_litters.csv",
+  skip = 10, col_names = FALSE) #Skip indicates the # of rows to skip before reading data. col_names = FALSE or TRUE indicates if you want to keep (true) or reject (false) the existing column/var names in which case they'll automatically show up as X1 and you can then change it to a new column name. Usually you'd use TRUE if the first row contains variable names 
+
+head(litters_data) #to double check how the first few lines look
+```
+
+# Parsing Columns 
+
+if you parse columns, make sure to be very specific about labeling what kind of variable each is.. e.g. character, integer, etc. Although not necessary because 'col_names' usually does a good job automatically guessing the type of data stored in each column 
+```{r}
+litters_data = read_csv(file = "./sample data/FAS_litters.csv",
+  col_types = cols(
+    Group = col_character(),
+    `Litter Number` = col_character(),
+    `GD0 weight` = col_double(), #double = numeric type of data that CANNOT contain decimals
+    `GD12 weight` = col_double(),
+    `GD of Birth` = col_integer(), #integer = numeric type of data CAN contain decimals 
+    `Pups born alive` = col_integer(),
+    `Pups dead @ birth` = col_integer(),
+    `Pups survive` = col_integer()
+  )
+)
+tail(litters_data)
+
+litters_data = read_csv(file = "./sample data/FAS_litters.csv",
+  col_types = "ccddiiii"
+)
+litters_data
+```
+
+# Other file formats
+
+To import non-csv, plain text files like excel files use 'read_table' instead of 'read_csv'
+```{r}
+library(readxl) # to load excel package
+mlb11_data = read_excel("./sample data/mlb11.xlsx", n_max = 20)
+head(mlb11_data, 5)
+```
+
+To import files from SAS, STATA, and SPSS. 
+```{r}
+library(haven) #to load haven package
+pulse_data = read_sas("./sample data/public_pulse_data.sas7bdat")
+head(pulse_data, 5)
+```
+
+# Comparison with Base R
+'read_csv' produces tibbles that are very similar to the base R data frames produced by 'read.csv'. However, tibbles have some features that can help prevent mistakes and unwanted behavior.
+
+# Learning Assessment
+```{r}
+pups_base = read.csv("./sample data/FAS_pups.csv")
+pups_readr = read_csv("./sample data/FAS_pups.csv")
+
+View(pups_base)
+View(pups_readr) #decimals show up instead of spaces between words
+
+pups_base #The litter number column is assigned as a factor type 
+pups_readr #The litter number column is assigned as a character type. Also, decimals show up instead of spaces between words.
+
+pups_base$S
+pups_readr$S #this command doesn't work... doesn't recognize 'S'
+```
+
+# Export Data
+use 'write_' functions in readr 
+
+
+
